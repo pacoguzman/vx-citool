@@ -202,6 +202,24 @@ test:
             end
           invoke_vxvm("ruby #{version}")
 
+        when 'activate'
+          re = invoke_shell('eval "$(rbenv init -)" || true')
+          return re unless re.success?
+
+          re = invoke_shell(%{
+                 $(rbenv versions |
+                  sed -e 's/^\*/ /' |
+                  awk '{print $1}' |
+                  grep -v 'system' |
+                  grep '#{args["ruby"]}' |
+                  tail -n1)
+              })
+          return re unless re.success?
+          rbenv_version = re.data.gsub(/\n/, ' ').gsub(/ +/, ' ').strip
+
+          re = invoke_shell("rbenv shell #{rbenv_version}")
+          return re unless re.success?
+
         when 'announce'
           re = invoke_shell("ruby --version")
           return re unless re.success?

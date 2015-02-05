@@ -81,9 +81,13 @@ module Vx
         rescue Timeout::TimeoutError
         end
 
-        re = ssh_keys.map.with_index do |_, index|
-          file = file_name[index]
-          invoke_shell("ssh-add #{file}", silent: true, title: "~/.ssh/id#{index}_rsa")
+        if args["org_key"]
+          re = [invoke_shell("ssh-add ${VX_ROOT}/.ssh/id_rsa", silent: true, title: "~/.ssh/id_rsa")]
+        else
+          re = ssh_keys.map.with_index do |_, index|
+            file = file_name[index]
+            invoke_shell("ssh-add #{file}", silent: true, title: "~/.ssh/id#{index}_rsa")
+          end
         end
 
         return re unless re.all?(&:success?)
